@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css'; // Đường dẫn đến tệp CSS của bạn
 
-import ChessBoard from "./components/ChessBoard";
+import ChessBoard from "./components/ChessBoard/ChessBoard";
 
 function App() {
   return (
