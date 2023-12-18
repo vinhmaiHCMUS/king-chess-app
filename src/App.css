@@ -2,7 +2,7 @@
   display: grid;
   place-content: center;
   height: 100vh;
-  background-color: lightgray; /* Thêm một màu nền để kiểm tra vị trí của container */
+  background-color: #202020; /* Thêm một màu nền để kiểm tra vị trí của container */
 }
 
 /* Các quy tắc CSS khác ở đây không ảnh hưởng đến vị trí */
