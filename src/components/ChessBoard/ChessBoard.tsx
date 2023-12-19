@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import {useRef, useState } from 'react';
 import Tile from '../Tile/Tile';
 import './ChessBoard.css';
+import Referee from '../../referee/Referee';
 
 const verticalAxis = ["1", "2", "3", "4", "5", "6", "7", "8"];
 const horizontalAxis = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -9,32 +10,49 @@ interface Piece{
     image: string;
     x: number;
     y: number;
+    type: PieceType;
+    team: TeamType;
+}
+
+export enum TeamType{
+    DOITHU,
+    NGUOICHOI
+}
+
+export enum PieceType {
+    PAWN,
+    BISHOP,
+    KNIGHT,
+    QUEEN,
+    KING,
+    ROOK
 }
 
 const initialBoardState: Piece[] = [];
 for(let p = 0; p < 2; p++)
 {
-    const type = (p === 0) ? "b" : "w";
-    const y = (p === 0) ? 7 : 0;
+    const teamType = (p===0) ? TeamType.DOITHU : TeamType.NGUOICHOI;
+    const type = (teamType === TeamType.DOITHU) ? "b" : "w";
+    const y = (teamType === TeamType.DOITHU) ? 7 : 0;
 
-    initialBoardState.push({image: `assets/images/rook_${type}.png`, x: 0, y})
-    initialBoardState.push({image: `assets/images/rook_${type}.png`, x: 7, y})
-    initialBoardState.push({image: `assets/images/knight_${type}.png`, x: 1, y})
-    initialBoardState.push({image: `assets/images/knight_${type}.png`, x: 6, y})
-    initialBoardState.push({image: `assets/images/bishop_${type}.png`, x: 2, y})
-    initialBoardState.push({image: `assets/images/bishop_${type}.png`, x: 5, y})
-    initialBoardState.push({image: `assets/images/queen_${type}.png`, x: 3, y})
-    initialBoardState.push({image: `assets/images/king_${type}.png`, x: 4, y})
+    initialBoardState.push({image: `assets/images/rook_${type}.png`, x: 0, y, type: PieceType.ROOK, team: teamType});
+    initialBoardState.push({image: `assets/images/rook_${type}.png`, x: 7, y, type: PieceType.ROOK, team: teamType})
+    initialBoardState.push({image: `assets/images/knight_${type}.png`, x: 1, y, type: PieceType.KNIGHT, team: teamType})
+    initialBoardState.push({image: `assets/images/knight_${type}.png`, x: 6, y, type: PieceType.KNIGHT, team: teamType})
+    initialBoardState.push({image: `assets/images/bishop_${type}.png`, x: 2, y, type: PieceType.BISHOP, team: teamType})
+    initialBoardState.push({image: `assets/images/bishop_${type}.png`, x: 5, y, type: PieceType.BISHOP, team: teamType})
+    initialBoardState.push({image: `assets/images/queen_${type}.png`, x: 3, y, type: PieceType.QUEEN, team: teamType})
+    initialBoardState.push({image: `assets/images/king_${type}.png`, x: 4, y, type: PieceType.KING, team: teamType})
 }
 
 for(let i = 0; i < 8; i++)
 {
-    initialBoardState.push({image: "assets/images/pawn_b.png", x: i, y: 6})
+    initialBoardState.push({image: "assets/images/pawn_b.png", x: i, y: 6, type: PieceType.PAWN, team: TeamType.DOITHU})
 }
 
 for(let i = 0; i < 8; i++)
 {
-    initialBoardState.push({image: "assets/images/pawn_w.png", x: i, y: 1})
+    initialBoardState.push({image: "assets/images/pawn_w.png", x: i, y: 1, type: PieceType.PAWN, team: TeamType.NGUOICHOI})
 }
 
 export default function ChessBoard(){
@@ -43,6 +61,7 @@ export default function ChessBoard(){
     const [gridY, setGridY] = useState(0);
     const [pieces, setPieces] = useState<Piece[]>(initialBoardState);
     const chessboardRef = useRef<HTMLDivElement>(null);
+    const referee = new Referee();
 
     function grabPiece(e: React.MouseEvent){
         const element = e.target as HTMLElement;
@@ -100,11 +119,23 @@ export default function ChessBoard(){
         if(activePiece && chessboard){
             const x= Math.floor((e.clientX - chessboard.offsetLeft) / 100);
             const y = Math.abs(Math.ceil((e.clientY - chessboard.offsetTop - 800) / 100));
+
+
+
+            //Cập nhật vị trí quân cờ
             setPieces((value) =>{
                 const pieces = value.map(p=>{
                     if(p.x === gridX && p.y === gridY){
-                        p.x = x;
-                        p.y = y;
+                        const validMove = referee.isValidMove(gridX, gridY, x, y, p.type, p.team);
+                        if(validMove){
+                            p.x = x;
+                            p.y = y;
+                        }else {
+                            activePiece.style.position = 'relative';
+                            activePiece.style.removeProperty('top');
+                            activePiece.style.removeProperty('left');
+                        }
+                        
                     }
                     return p;
                 });
@@ -140,3 +171,4 @@ export default function ChessBoard(){
         {board}
     </div>
 }
+
